@@ -139,69 +139,19 @@ Kustomize Version: v5.4.2
 
 ### 6. Install and Configure Helm
 
-```
-curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-```
-
-Output for the last command should be something like
-
-```
-[root@lab01 ~]# helm repo update
-Hang tight while we grab the latest from your chart repositories...
-...Successfully got an update from the "bitnami" chart repository
-Update Complete. ⎈Happy Helming!⎈
-[root@lab01 ~]#
-```
+...
+...
 
 ### 7. Download the helm charts to deploy PostgreSQL
 
-```
-sudo dnf install -y git
-git clone https://github.com/postgrestraining/postgresql-helm-charts.git
-cd postgresql-helm-charts
-```
+...
+...
 
 ## PostgreSQL Deployment
 
 ### 1. Deploy PostgreSQL Database Cluster with Helm
-
-```
-cd /root/postgresql-helm-charts
-helm install primary-postgresql ./chart-primary
-```
-
-Check if the deployment is configured with LoadBalancer
-
-```
-[root@lab01 postgresql-helm-charts]# kubectl describe svc primary-postgresql | grep Type
-Type:                     LoadBalancer
-[root@lab01 postgresql-helm-charts]#
-```
-
-Check if the deployment is successful, the output should look like this 
-
-```
-[root@lab01 postgresql-helm-charts]# helm install primary-postgresql ./chart-primary
-NAME: primary-postgresql
-LAST DEPLOYED: Sat Nov  9 01:23:46 2024
-NAMESPACE: default
-STATUS: deployed
-REVISION: 1
-TEST SUITE: None
-
-[root@lab01 postgresql-helm-charts]# kubectl get pods
-NAME                                 READY   STATUS    RESTARTS   AGE
-primary-postgresql-66bd47f89-jnpnj   1/1     Running   0          42s
-
-[root@lab01 postgresql-helm-charts]# kubectl get svc
-NAME                 TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
-kubernetes           ClusterIP      10.96.0.1       <none>        443/TCP          13m
-primary-postgresql   LoadBalancer   10.105.10.137   <pending>     5432:30467/TCP   45s
-[root@lab01 postgresql-helm-charts]#
-```
-
+...
+...
 ### 2. Login to the pod and create required tables and install vi and procps 
 
 **Command to login:** `kubectl exec -it <pod_name derived from kubectl get pods> -- /bin/bash`
@@ -213,68 +163,8 @@ apt install vi
 apt install procps
 ```
 
-**exit and login as postgres user:** `kubectl exec -it <pod_name derived from kubectl get pods> -- su - postgres`
-
-```
-[root@lab01 postgresql-helm-charts]# kubectl exec -it primary-postgresql-66bd47f89-jnpnj -- su - postgres
-postgres@primary-postgresql-66bd47f89-jnpnj:~$ cd /var/lib/postgresql/data
-postgres@primary-postgresql-66bd47f89-jnpnj:~/data$ vi pg_hba.conf
-..
-host    replication     all             0.0.0.0/0               trust
-host    all             all             0.0.0.0/0               trust
-..
-..
-
-postgres@primary-postgresql-66bd47f89-jnpnj:~/data$ psql
-psql (17.0 (Debian 17.0-1.pgdg120+1))
-Type "help" for help.
-
-postgres=# select pg_reload_conf();
- pg_reload_conf
-----------------
- t
-(1 row)
-
-```
-### 3. Stay within the pod and create tables
-
-```
-CREATE TABLE authors (
-    author_id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL
-);
-
-CREATE TABLE books (
-    book_id SERIAL PRIMARY KEY,
-    title VARCHAR(200) NOT NULL,
-    author_id INT REFERENCES authors(author_id)
-);
-
-CREATE TABLE test (
-	id int,
-	val int
-);
-
-insert into test values(1,1);
-```
-### 4. From the VM, insert the data. 
-
-- Use port forwarding to to load the data from python script.
-
-**Session 1**
-
-```
-[root@lab01 postgresql-helm-charts]# kubectl get svc
-NAME                 TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)          AGE
-kubernetes           ClusterIP      10.96.0.1       <none>        443/TCP          31m
-primary-postgresql   LoadBalancer   10.105.10.137   <pending>     5432:30467/TCP   18m
-[root@lab01 postgresql-helm-charts]#
-
-[root@lab01 postgresql-helm-charts]# kubectl port-forward svc/primary-postgresql 5432:5432
-Forwarding from 127.0.0.1:5432 -> 5432
-Forwarding from [::1]:5432 -> 5432
-
-```
+...
+...
 
 While the session in open state, open session 2
 
@@ -293,24 +183,7 @@ Inserting authors...
 Total authors inserted: 1000
 Inserting books...
 5000 books inserted...
-10000 books inserted...
-15000 books inserted...
-20000 books inserted...
-25000 books inserted...
-30000 books inserted...
-35000 books inserted...
-40000 books inserted...
-45000 books inserted...
-50000 books inserted...
-55000 books inserted...
-60000 books inserted...
-65000 books inserted...
-70000 books inserted...
-75000 books inserted...
-80000 books inserted...
-85000 books inserted...
-90000 books inserted...
-95000 books inserted...
+...
 100000 books inserted...
 Total books inserted: 100000
 Data insertion completed.
@@ -340,46 +213,12 @@ postgres=#
 ```
 
 ## Set up replication for primary deployment
-
-```
-cd /root/postgresql-helm-charts
-helm install replica-postgresql ./chart-replica/
-```
-
-- Get the pod name and check if the data replicated
-
-```
-[root@lab01 postgresql-helm-charts]# kubectl get pods
-NAME                                  READY   STATUS    RESTARTS   AGE
-primary-postgresql-66bd47f89-jnpnj    1/1     Running   0          26m
-replica-postgresql-6484bfbf6f-4nh6f   1/1     Running   0          6s
-[root@lab01 postgresql-helm-charts]#
-
-[root@lab01 postgresql-helm-charts]# kubectl exec -it replica-postgresql-6484bfbf6f-4nh6f -- psql -U postgres
-Defaulted container "postgres" out of: postgres, pg-basebackup (init)
-psql (17.0 (Debian 17.0-1.pgdg120+1))
-Type "help" for help.
-
-postgres=# psql
-postgres=# select count(1) from books;
- count
---------
- 100000
-(1 row)
-
-postgres=# delete from books;
-ERROR:  cannot execute DELETE in a read-only transaction
-postgres=#
-```
+..
+..
 ## Set up standalone PostgreSQL deployment and convert it as replica for current primary
 
-```
-cd /root/postgresql-helm-charts
-helm install standalone-postgresql ./chart-standalone/
-```
-
-- Since it is a standalone deployment, you can do read/write operation
-
+..
+..
 ```
 [root@lab01 postgresql-helm-charts]# kubectl get pods
 NAME                                     READY   STATUS    RESTARTS   AGE
@@ -400,27 +239,8 @@ postgres=#
 ```
 
 ## Convert the standalone-postgresql-548f49dc97-spkjs to replica
-
-```
-- Before that get svc details
-
-[root@lab01 postgresql-helm-charts]# kubectl get svc
-NAME                    TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
-kubernetes              ClusterIP      10.96.0.1        <none>        443/TCP          46m
-primary-postgresql      LoadBalancer   10.105.10.137    <pending>     5432:30467/TCP   33m
-replica-postgresql      ClusterIP      10.97.195.11     <none>        5432/TCP         7m17s
-standalone-postgresql   ClusterIP      10.104.103.168   <none>        5432/TCP         2m34s
-[root@lab01 postgresql-helm-charts]#
-```
-
-- Convert the standalone-postgresql to replica
-
-```
-cd /root/postgresql-helm-charts/chart-convert/templates
-kubectl apply -f deployment-convert.yaml
-```
-- Get the pod logs and check if replica conversion completed, also login and check if data is replicated
-  	
+..
+..
 ```
 [root@lab01 templates]# kubectl logs standalone-postgresql-7454dbcbb7-v9ffz
 Defaulted container "postgres" out of: postgres, pg-basebackup (init)
@@ -475,40 +295,9 @@ postgres=# delete from test;
 ERROR:  cannot execute DELETE in a read-only transaction
 postgres=#
 
-```
-
-### Restart the pod if required
-
-```
-[root@lab01 templates]# kubectl delete pods standalone-postgresql-7454dbcbb7-f6zdm
-pod "standalone-postgresql-7454dbcbb7-f6zdm" deleted
-[root@lab01 templates]#
-```
-## To push your folder to Git, follow these steps:
-
-```
-cd /root/postgresql-helm-charts
-git init
-git add .
-git config --global user.email "postgrestraining@gmail.com"
-git config --global user.name ""postgrestraining"
-git commit -m "Initial commit with folder contents"
-
-## Create a new repository on GitHub (for example., created helm-push repository)
-
-## Push the folder
-git remote add origin https://github.com/postgrestraining/helm-push.git
-git push -u origin main
-```
-
-### If you need to connect with LoadBalancer or ClusterIP
-
-```
-kubectl get svc
-minikube service my-postgresql-postgresql-lb --url
-psql -h 192.168.49.2 -p 32099  -U postgres -d postgres
-```
-
+``1
+...
+...
 ### If you want to install metallb for LoadBalancer
 
 ```
