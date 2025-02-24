@@ -295,15 +295,4 @@ postgres=# delete from test;
 ERROR:  cannot execute DELETE in a read-only transaction
 postgres=#
 
-``1
-...
-...
-### If you want to install metallb for LoadBalancer
-
-```
-kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/main/config/manifests/metallb-native.yaml
-kubectl get pods -n metallb-system
-minikube ip
-
-kubectl apply -f metallb-config.yaml
 ```
